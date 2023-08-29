@@ -17,7 +17,6 @@ confirm:
 .PHONY: install
 install: .envrc
 	asdf install
-	go install honnef.co/go/tools/cmd/staticcheck@latest
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install gotest.tools/gotestsum@latest
 
@@ -44,11 +43,7 @@ test: .envrc dependencies
 ## audit: tidy dependencies and format, and vet all code
 .PHONY: audit
 audit: .envrc dependencies
-	@echo 'Formatting code...'
-	go fmt ./...
-	@echo 'Vetting code...'
-	go vet ./...
-	staticcheck ./...
+	@echo 'Auditing code...'
 	golangci-lint run
 
 ## deploy: deploy the API
