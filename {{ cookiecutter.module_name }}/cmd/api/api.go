@@ -13,8 +13,9 @@ import (
 	"syscall"
 	"time"
 
-  "{{ cookiecutter.module_path }}/internal/util"
+	"github.com/charmbracelet/log"
 	"github.com/rs/cors"
+	"{{ cookiecutter.module_path }}/internal/util"
 )
 
 const version = "{{ cookiecutter.version }}"
@@ -27,11 +28,16 @@ type srvConfig struct {
 type server struct {
 	config srvConfig
 	logger *slog.Logger
-  wg     sync.WaitGroup //lint:ignore U1000 useful templating code, remove lint:ignore when using for the first time
+	wg     sync.WaitGroup //lint:ignore U1000 useful templating code, remove lint:ignore when using for the first time
 }
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	handler := log.NewWithOptions(os.Stderr, log.Options{
+		ReportCaller:    true,
+		ReportTimestamp: true,
+		TimeFormat:      time.DateTime,
+	})
+	logger := slog.New(handler)
 	slog.SetDefault(logger)
 
 	cfg := configFromEnv(logger)

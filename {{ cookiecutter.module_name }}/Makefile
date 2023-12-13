@@ -16,7 +16,9 @@ confirm:
 ## install: bootstrap all dependencies for the project
 .PHONY: install
 install: .envrc
+	@asdf --version >/dev/null 2>&1 || (echo "ERROR: asdf (https://asdf-vm.com) is required. Install and try again."; exit 1)
 	asdf install
+	go mod tidy
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install gotest.tools/gotestsum@latest
 
