@@ -18,8 +18,6 @@ import (
 	"{{ cookiecutter.module_path }}/internal/util"
 )
 
-const version = "{{ cookiecutter.version }}"
-
 type srvConfig struct {
 	port int
 	env  string

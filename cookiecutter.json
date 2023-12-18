@@ -1,14 +1,12 @@
 {
-  "module_path": "example.com/api",
+  "module_path": null,
   "module_name": "{{ cookiecutter.module_path.split('/')[-1] }}",
   "golang_version": "1.21.0",
-  "version": "0.1.0",
   "server_port": 8080,
   "__prompts__": {
-    "module_path": "Module Path (e.g. github.com/bitsmithy/api):",
-    "module_name": "Module Name:",
-    "golang_version": "Go Version:",
-    "version": "Project Version:",
-    "server_port": "Port for API to listen on:"
+    "module_path": "Module Path (e.g. github.com/myorg/myapi)",
+    "module_name": "Module Name",
+    "golang_version": "Go Version",
+    "server_port": "Port for API to listen on"
   }
 }

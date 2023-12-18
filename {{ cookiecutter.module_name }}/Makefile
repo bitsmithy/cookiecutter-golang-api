@@ -1,5 +1,12 @@
 include .envrc
 
+VERSION ?= $(shell ./scripts/semver current)
+BUILD_COMMIT ?= $(shell git rev-parse HEAD)
+BUILD_BY ?= $(shell git config user.name)
+BUILD_TIME ?= $(shell date --utc)
+BUILD_SYMBOL_PREFIX ?= $(shell cat go.mod | grep -e "^module" | cut -d" " -f2)/internal/build
+BUILD_LDFLAGS=-ldflags "-X '$(BUILD_SYMBOL_PREFIX).Version=$(VERSION)' -X '$(BUILD_SYMBOL_PREFIX).Commit=$(BUILD_COMMIT)' -X '$(BUILD_SYMBOL_PREFIX).User=$(BUILD_BY)' -X '$(BUILD_SYMBOL_PREFIX).Time=$(BUILD_TIME)'"
+
 ## help: print this help message
 .PHONY: help
 help:
@@ -8,15 +15,22 @@ help:
 
 .PHONY: confirm
 confirm:
-	@echo -n 'Are you sure? [y/N] ' && read ans && [ $${ans:-N} = y ]
+	@echo 'Are you sure? [y/N] \c' && read ans && [ $${ans:-N} = y ]
 
 .envrc:
 	@echo -e "{{ cookiecutter.module_name.upper() }}_ENV=local\n{{ cookiecutter.module_name.upper() }}_PORT={{ cookiecutter.server_port }}" > $@
 
+.PHONY: check_dirty_workspace
+check_dirty_workspace:
+	@git diff --quiet
+
+.PHONY: check_all
+check_all: check_dirty_workspace audit test confirm
+
 ## install: bootstrap all dependencies for the project
 .PHONY: install
 install: .envrc
-	@asdf --version >/dev/null 2>&1 || (echo "ERROR: asdf (https://asdf-vm.com) is required. Install and try again."; exit 1)
+	$(if $(shell command -v asdf 2> /dev/null),,$(error ERROR: `asdf` [https://asdf-vm.com] is required))
 	asdf install
 	go mod tidy
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
@@ -48,7 +62,38 @@ audit: .envrc dependencies
 	@echo 'Auditing code...'
 	golangci-lint run
 
-## deploy: deploy the API
+## build: build the app with passed in `VERSION`, defaulting to current version
+.PHONY: build
+build: check_all
+	go generate ./...
+	@echo "Building version ${VERSION}"
+	git fetch --all --tags --prune
+	git checkout tags/$(VERSION)
+	go build $(BUILD_LDFLAGS) -o bin/ ./...
+	git checkout -
+
+## deploy: deploy the API, using VERSION, defaulting to the current version
 .PHONY: deploy
-deploy: audit test confirm
-	@echo 'Nothing to do: implement `make deploy`'
+deploy: check_all
+	@echo "Deploying version ${VERSION}"
+	git publish
+	git push --tags
+	git fetch --all --tags --prune
+	git checkout tags/$(VERSION)
+	@echo 'No deploy actions yet: implement `make deploy` section that actually deploys'
+	git checkout -
+
+## tag-patch: create and push a git tag indicating the next patch version
+.PHONY: tag-patch
+tag-patch: check_all
+	scripts/semver -w next-patch
+
+## tag-minor: create and push a git tag indicating the next minor version
+.PHONY: tag-minor
+tag-minor: check_all
+	scripts/semver -w next-minor
+
+## tag-major: create and push a git tag indicating the next major version
+.PHONY: tag-major
+tag-major: check_all
+	scripts/semver -w next-major
