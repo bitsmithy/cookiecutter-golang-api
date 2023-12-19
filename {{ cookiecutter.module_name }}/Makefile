@@ -34,7 +34,9 @@ install: .envrc
 	asdf install
 	go mod tidy
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install github.com/incu6us/goimports-reviser/v3@latest
 	go install gotest.tools/gotestsum@latest
+	go install mvdan.cc/gofumpt@latest
 
 ## run: start the API server
 .PHONY: run
@@ -60,6 +62,7 @@ test: .envrc dependencies
 .PHONY: audit
 audit: .envrc dependencies
 	@echo 'Auditing code...'
+	goimports-reviser -rm-unused -set-alias -format ./...
 	golangci-lint run
 
 ## build: build the app with passed in `VERSION`, defaulting to current version
