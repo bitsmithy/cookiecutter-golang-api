@@ -1,0 +1,15 @@
+assert_lefthook_installed: true
+colors: false
+no_tty: true
+skip_output: meta,execution,execution_out,execution_info
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      run: make lint
+      stage_fixed: true
+    format:
+      run: make format
+      stage_fixed: true
+    test:
+      run: make test
