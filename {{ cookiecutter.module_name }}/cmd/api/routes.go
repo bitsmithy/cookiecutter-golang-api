@@ -6,13 +6,13 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func (s *server) routes() http.Handler {
-	router := httprouter.New()
+func (app *application) routes() http.Handler {
+	mux := httprouter.New()
 
-	router.NotFound = http.HandlerFunc(s.notFoundResponse)
-	router.MethodNotAllowed = http.HandlerFunc(s.methodNotAllowedResponse)
+	mux.NotFound = http.HandlerFunc(app.notFound)
+	mux.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowed)
 
-	router.GET("/healthcheck", s.healthcheckHandler)
+	mux.HandlerFunc("GET", "/status", app.status)
 
-	return s.recoverPanic(s.logRequest(router))
+	return app.logAccess(app.recoverPanic(mux))
 }

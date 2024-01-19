@@ -11,5 +11,7 @@ pre-commit:
     format:
       run: make format
       stage_fixed: true
+    audit:
+      run: make audit
     test:
       run: make test

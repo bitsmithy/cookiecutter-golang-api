@@ -1,7 +1,7 @@
 {
   "module_path": null,
   "module_name": "{{ cookiecutter.module_path.split('/')[-1] }}",
-  "server_port": 8080,
+  "server_port": 4444,
   "__prompts__": {
     "module_path": "Module Path (e.g. github.com/myorg/myapi)",
     "module_name": "Module Name",
