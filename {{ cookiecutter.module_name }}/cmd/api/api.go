@@ -7,13 +7,22 @@ import (
 	"os"
 	"runtime/debug"
 	"sync"
+  "time"
+
+  "github.com/charmbracelet/log"
 
 	"{{ cookiecutter.module_path }}/internal/env"
 	"{{ cookiecutter.module_path }}/internal/version"
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+  handler := log.NewWithOptions(os.Stderr, log.Options{
+		ReportCaller:    true,
+		ReportTimestamp: true,
+		TimeFormat:      time.DateTime,
+	})
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
 
 	err := run(logger)
 	if err != nil {
