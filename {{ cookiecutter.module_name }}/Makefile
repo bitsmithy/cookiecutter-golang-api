@@ -45,13 +45,24 @@ deploy: check_all confirm
 ## format: autoformat all code
 .PHONY: format
 format:
-	go run github.com/incu6us/goimports-reviser/v3@latest -rm-unused -set-alias -format -set-exit-status ./...
+	go run github.com/incu6us/goimports-reviser/v3@latest -rm-unused -set-alias -format ./...
 	go run mvdan.cc/gofumpt@latest -l -w .
+
+## format/ci: runs formatters in CI mode (exits on error)
+.PHONY: format/ci
+format/ci:
+	# gofumpt's check is run as part of golangci-lint in lint/ci (https://github.com/mvdan/gofumpt/issues/114)
+	go run github.com/incu6us/goimports-reviser/v3@latest -rm-unused -set-alias -format -set-exit-status ./...
 
 ## lint: run all linters
 .PHONY: lint
 lint:
-	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run --fix
+	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run --fix --disable govet,staticcheck
+
+## lint/ci: runs linters in CI mode (exits on error)
+.PHONY: lint/ci
+lint/ci:
+	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run --enable gofumpt --disable govet,staticcheck
 
 ## run: start the API server
 .PHONY: run
@@ -61,7 +72,7 @@ run: build
 ## run/live: run the API server with reloading on file changes
 .PHONY: run/live
 run/live:
-	go run github.com/cosmtrek/air@v1.43.0 \
+	go run github.com/cosmtrek/air@latest \
 		--build.cmd "go build -o $(BUILD_OUTPUT) ./cmd/api" --build.bin "$(BUILD_OUTPUT)" --build.delay "100" \
 		--build.exclude_dir "" \
 		--build.include_ext "go, tpl, tmpl, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico" \
@@ -80,6 +91,11 @@ setup:
 test:  deps
 	go clean -testcache
 	go run gotest.tools/gotestsum@latest -- -race -buildvcs -vet=off ./...
+
+# test/ci: run all tests in CI mode (fail fast, coverage for codecov)
+.PHONY: test/ci
+test/ci:
+	go run gotest.tools/gotestsum@latest -- -failfast -race -covermode=atomic -coverprofile=/tmp/coverage.out ./...
 
 ## test/cover: run all tests and display coverage
 .PHONY: test/cover

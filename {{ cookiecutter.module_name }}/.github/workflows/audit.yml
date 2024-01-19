@@ -1,17 +1,17 @@
-name: lint
+name: audit
 on:
   push:
   pull_request:
 permissions:
   contents: read
 jobs:
-  lint:
+  audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
           go-version: stable
-      - name: golangci-lint
+      - name: audit
         run: |
-          make lint/ci
+          make audit

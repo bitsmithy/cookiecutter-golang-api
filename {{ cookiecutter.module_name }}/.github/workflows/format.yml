@@ -1,17 +1,17 @@
-name: lint
+name: format
 on:
   push:
   pull_request:
 permissions:
   contents: read
 jobs:
-  lint:
+  format:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
           go-version: stable
-      - name: golangci-lint
+      - name: format
         run: |
-          make lint/ci
+          make format/ci
