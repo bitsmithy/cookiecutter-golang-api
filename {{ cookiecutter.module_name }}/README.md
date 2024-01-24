@@ -2,7 +2,7 @@
 
 ## Development
 
-This project assumes you are using [asdf](https://asdf-vm.com/) to manage
+This project assumes you are using [mise](https://mise.jdx.dev) to manage
 development tools. Once installed, simply run `make setup` to perform a
 one-time setup installation of required development dependencies.
 

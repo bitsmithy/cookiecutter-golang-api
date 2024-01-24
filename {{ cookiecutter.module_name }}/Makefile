@@ -81,8 +81,8 @@ run/live:
 ## setup: bootstrap all development dependencies for the project
 .PHONY: setup
 setup:
-	$(if $(shell command -v asdf 2> /dev/null),,$(error ERROR: `asdf` [https://asdf-vm.com] is required))
-	asdf install
+	$(if $(shell command -v mise 2> /dev/null),,$(error ERROR: `mise` [https://mise.jdx.dev] is required))
+	mise install
 	go mod tidy
 	go install github.com/evilmartians/lefthook@latest
 
