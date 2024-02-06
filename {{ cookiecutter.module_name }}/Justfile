@@ -1,0 +1,61 @@
+set dotenv-load := true
+set dotenv-filename := ".envrc"
+
+bin_output := "/tmp/bin/{{ cookiecutter.module_name }}"
+coverage_output := "/tmp/coverage.txt"
+
+[private]
+default:
+  @just --list
+
+# build the app
+build: check_all deps
+	go build -o {{ "{{bin_output}}" }} ./cmd/api
+
+[private]
+check_all: check_dirty ci test
+
+[private]
+check_dirty:
+	@git diff --quiet
+
+# run all checks that would run in CI
+ci:
+	go run github.com/golangci/golangci-lint/cmd/golangci-lint@master run
+	go run gotest.tools/gotestsum@latest -- -failfast -race -covermode=atomic -coverprofile={{ "{{coverage_output}}" }} ./...
+
+# run all tests and display coverage
+coverage:
+	go run gotest.tools/gotestsum@latest -- -race -buildvcs -coverprofile={{ "{{coverage_output}}" }} ./...
+	go tool cover -html={{ "{{coverage_output}}" }}
+
+[private]
+deps:
+	go mod tidy -v
+	go mod verify
+
+# deploy the API
+[confirm]
+deploy:
+	@echo 'No deploy actions yet: implement `just deploy` section'
+
+# run all linters
+lint:
+	go run github.com/golangci/golangci-lint/cmd/golangci-lint@master run --fix
+
+# run the application with live-reloading on file changes
+live:
+	go run github.com/cosmtrek/air@latest \
+		--build.cmd "go build -o {{ "{{bin_output}}" }} ./cmd/api" --build.bin "{{ "{{bin_output}}" }}" --build.delay "100" \
+		--build.exclude_dir "" \
+		--build.include_ext "go, tpl, tmpl, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico" \
+		--misc.clean_on_exit "true"
+
+# run the app
+run: build
+	{{ "{{bin_output}}" }}
+
+# run all tests
+test: deps
+	go clean -testcache
+	go run gotest.tools/gotestsum@latest -- -race -buildvcs -vet=off ./...

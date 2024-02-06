@@ -6,12 +6,7 @@ pre-commit:
   parallel: true
   commands:
     lint:
-      run: make lint
+      run: just lint
       stage_fixed: true
-    format:
-      run: make format
-      stage_fixed: true
-    audit:
-      run: make audit
     test:
-      run: make test
+      run: just test

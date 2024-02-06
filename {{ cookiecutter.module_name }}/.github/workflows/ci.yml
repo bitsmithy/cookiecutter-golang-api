@@ -1,4 +1,4 @@
-name: test
+name: ci
 on:
   push:
   pull_request:
@@ -12,11 +12,14 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: stable
-      - name: test
-        run: |
-          make test/ci
+      - uses: extractions/setup-just@v1
+        with:
+          just-version: latest
       - uses: codecov/codecov-action@v3
         if: matrix.os == 'ubuntu-latest'
         with:
           token: ${{ "{{" }} secrets.CODECOV_TOKEN {{ "}}" }}
           file: /tmp/coverage.txt
+      - name: ci
+        run: |
+          just ci
