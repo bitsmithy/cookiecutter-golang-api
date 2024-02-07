@@ -1,4 +1,3 @@
-set dotenv-load := true
 set dotenv-filename := ".envrc"
 
 bin_output := "/tmp/bin/{{ cookiecutter.module_name }}"
