@@ -45,7 +45,7 @@ type application struct {
 func run(logger *slog.Logger) error {
 	var cfg config
 
-	cfg.httpPort = env.GetInt("{{ cookiecutter.module_name.upper() }}_PORT", {{ cookiecutter.server_port }})
+	cfg.httpPort = env.GetInt("{{ cookiecutter.module_name.upper().replace('-', '_') }}_PORT", {{ cookiecutter.server_port }})
 
 	showVersion := flag.Bool("version", false, "display version and exit")
 
