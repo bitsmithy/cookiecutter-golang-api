@@ -12,7 +12,7 @@ func (app *application) routes() http.Handler {
 	mux.NotFound = http.HandlerFunc(app.notFound)
 	mux.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowed)
 
-	mux.HandlerFunc("GET", "/status", app.status)
+	mux.GET("/status", app.status)
 
 	return app.logAccess(app.recoverPanic(mux))
 }
