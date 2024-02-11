@@ -5,5 +5,5 @@ bootstrap:
 	mise plugin add direnv
 	mise install just@latest direnv@latest
 	mise use just@latest direnv@latest
-	go mod tidy
-	go install github.com/evilmartians/lefthook@latest
+	mise exec golang -- go mod tidy
+	mise exec golang -- go install github.com/evilmartians/lefthook@latest

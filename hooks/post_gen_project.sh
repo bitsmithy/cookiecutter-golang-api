@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 direnv allow
 mise install golang@latest
 mise use golang@latest
-go mod init '{{ cookiecutter.module_path }}'
+mise exec golang@latest -- go mod init '{{ cookiecutter.module_path }}'
 make bootstrap
-just lint
-just test
+mise exec just@latest -- just lint
+mise exec just@latest -- just test
 git init && git add . && git commit -m "Initial commit, generated with cookiecutter"
 lefthook install
