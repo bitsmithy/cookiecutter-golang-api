@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 direnv allow
+mise install golang@latest
 mise use golang@latest
 go mod init '{{ cookiecutter.module_path }}'
 make bootstrap
