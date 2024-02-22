@@ -7,6 +7,6 @@ bootstrap:
 	mise use just@latest direnv@latest
 	mise exec golang -- go mod tidy
 	mise exec golang -- go install github.com/evilmartians/lefthook@latest
-	mise exec golang -- go install github.com/golangci/golangci-lint/cmd/golangci-lint@master
+	mise exec golang -- go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	mise exec golang -- go install gotest.tools/gotestsum@latest
 	mise exec golang -- go install github.com/cosmtrek/air@latest
