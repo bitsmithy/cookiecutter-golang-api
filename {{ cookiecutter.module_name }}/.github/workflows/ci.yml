@@ -14,8 +14,6 @@ jobs:
         with:
           go-version: stable
       - uses: extractions/setup-just@v1
-        with:
-          just-version: latest
       - uses: codecov/codecov-action@v3
         if: matrix.os == 'ubuntu-latest'
         with:
