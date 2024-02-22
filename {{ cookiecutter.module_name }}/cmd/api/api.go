@@ -3,31 +3,20 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log/slog"
 	"os"
 	"runtime/debug"
 	"sync"
-  "time"
-
-  "github.com/charmbracelet/log"
 
 	"{{ cookiecutter.module_path }}/internal/env"
+	"{{ cookiecutter.module_path }}/internal/log"
 	"{{ cookiecutter.module_path }}/internal/version"
 )
 
 func main() {
-  handler := log.NewWithOptions(os.Stderr, log.Options{
-		ReportCaller:    true,
-		ReportTimestamp: true,
-		TimeFormat:      time.DateTime,
-	})
-	logger := slog.New(handler)
-	slog.SetDefault(logger)
-
-	err := run(logger)
+	err := run()
 	if err != nil {
 		trace := string(debug.Stack())
-		logger.Error(err.Error(), "trace", trace)
+		log.New().Error(err.Error(), "trace", trace)
 		os.Exit(1)
 	}
 }
@@ -38,11 +27,10 @@ type config struct {
 
 type application struct {
 	config config
-	logger *slog.Logger
 	wg     sync.WaitGroup
 }
 
-func run(logger *slog.Logger) error {
+func run() error {
 	var cfg config
 
 	cfg.httpPort = env.GetInt("{{ cookiecutter.module_name.upper().replace('-', '_') }}_PORT", {{ cookiecutter.server_port }})
@@ -58,7 +46,6 @@ func run(logger *slog.Logger) error {
 
 	app := &application{
 		config: cfg,
-		logger: logger,
 	}
 
 	return app.serveHTTP()

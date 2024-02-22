@@ -5,9 +5,10 @@ import (
 	"log/slog"
 	"net/http"
 
-	"{{ cookiecutter.module_path }}/internal/response"
-
 	"github.com/tomasen/realip"
+
+	"{{ cookiecutter.module_path }}/internal/log"
+	"{{ cookiecutter.module_path }}/internal/response"
 )
 
 func (app *application) recoverPanic(next http.Handler) http.Handler {
@@ -39,6 +40,6 @@ func (app *application) logAccess(next http.Handler) http.Handler {
 		requestAttrs := slog.Group("request", "method", method, "url", url, "proto", proto)
 		responseAttrs := slog.Group("repsonse", "status", mw.StatusCode, "size", mw.BytesCount)
 
-		app.logger.Info("access", userAttrs, requestAttrs, responseAttrs)
+		log.Info(r.Context(), "access", userAttrs, requestAttrs, responseAttrs)
 	})
 }

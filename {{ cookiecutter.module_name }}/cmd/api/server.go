@@ -10,6 +10,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"{{ cookiecutter.module_path }}/internal/log"
 )
 
 const (
@@ -20,10 +22,12 @@ const (
 )
 
 func (app *application) serveHTTP() error {
+	logger := log.New()
+
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", app.config.httpPort),
 		Handler:      app.routes(),
-		ErrorLog:     slog.NewLogLogger(app.logger.Handler(), slog.LevelWarn),
+		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelWarn),
 		IdleTimeout:  defaultIdleTimeout,
 		ReadTimeout:  defaultReadTimeout,
 		WriteTimeout: defaultWriteTimeout,
@@ -42,7 +46,7 @@ func (app *application) serveHTTP() error {
 		shutdownErrorChan <- srv.Shutdown(ctx)
 	}()
 
-	app.logger.Info("starting server", slog.Group("server", "addr", srv.Addr))
+	logger.Info("starting server", slog.Group("server", "addr", srv.Addr))
 
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
@@ -54,7 +58,7 @@ func (app *application) serveHTTP() error {
 		return err
 	}
 
-	app.logger.Info("stopped server", slog.Group("server", "addr", srv.Addr))
+	logger.Info("stopped server", slog.Group("server", "addr", srv.Addr))
 
 	app.wg.Wait()
 	return nil
