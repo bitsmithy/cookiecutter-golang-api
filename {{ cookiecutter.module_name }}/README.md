@@ -11,8 +11,14 @@ The versions of Go and all required tools are specified in the
 
 ### Makefile
 
-This project makes use of a Makefile to run all development and operations
-related tasks. Simply run `make` or `make help` to see the menu of targets that are available.
+This project makes use of a Makefile to bootstrap development.
+Simply run `make bootstrap` to get started.
+
+### Justfile
+
+This project makes use of a [Justfile](https://just.systems) for all
+development and operations tasks. Simply run `just` or `just --list`
+to see all available tasks.
 
 ### Environment Variables
 
