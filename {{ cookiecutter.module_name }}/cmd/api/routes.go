@@ -6,7 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func (app *application) routes() http.Handler {
+func (app *application) mux() *httprouter.Router {
 	mux := httprouter.New()
 
 	mux.NotFound = http.HandlerFunc(app.notFound)
@@ -14,5 +14,9 @@ func (app *application) routes() http.Handler {
 
 	mux.GET("/status", app.status)
 
-	return app.logAccess(app.recoverPanic(mux))
+	return mux
+}
+
+func (app *application) routes() http.Handler {
+	return app.logAccess(app.recoverPanic(app.mux()))
 }
