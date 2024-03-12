@@ -3,7 +3,6 @@ assert_lefthook_installed: true
 colors: false
 no_tty: true
 skip_output:
-  - meta  # Skips lefthook version printing
   - execution  # Skips printing execution logs (but prints on failure)
   - execution_out  # Skips printing execution output (but prints failure)
   - execution_info  # Skips printing `EXECUTE > ...` logging
