@@ -18,5 +18,5 @@ func (app *application) mux() *httprouter.Router {
 }
 
 func (app *application) routes() http.Handler {
-	return app.logAccess(app.recoverPanic(app.mux()))
+	return app.instrument(app.recoverPanic(app.logAccess(app.mux())))
 }

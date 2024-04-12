@@ -37,7 +37,8 @@ func testRequest(t *testing.T, method, path string, params io.Reader) (*httptest
 
 func TestAPI(t *testing.T) {
 	t.Run("/status", func(t *testing.T) {
-		want := map[string]any{"Status": "OK"}
+		want := map[string]any{"status": "up"}
+
 		_, got := testRequest(t, "GET", "/status", nil)
 
 		if !th.MapsEq(want, got) {

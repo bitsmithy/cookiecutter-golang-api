@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,9 +11,11 @@ import (
 	"time"
 
 	"{{ cookiecutter.module_path }}/internal/log"
+	"{{ cookiecutter.module_path }}/internal/telemetry"
 )
 
 const (
+	serviceName           = "{{ cookiecutter.module_name }}"
 	defaultIdleTimeout    = time.Minute
 	defaultReadTimeout    = 5 * time.Second
 	defaultWriteTimeout   = 10 * time.Second
@@ -22,18 +23,18 @@ const (
 )
 
 func (app *application) serveHTTP() error {
-	logger := log.New()
+	l := log.New()
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", app.config.httpPort),
 		Handler:      app.routes(),
-		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelWarn),
+		ErrorLog:     l.StdLogger(log.ErrorLevel),
 		IdleTimeout:  defaultIdleTimeout,
 		ReadTimeout:  defaultReadTimeout,
 		WriteTimeout: defaultWriteTimeout,
 	}
 
-	shutdownErrorChan := make(chan error)
+	shutdownServerChan := make(chan error)
 
 	go func() {
 		quitChan := make(chan os.Signal, 1)
@@ -43,22 +44,35 @@ func (app *application) serveHTTP() error {
 		ctx, cancel := context.WithTimeout(context.Background(), defaultShutdownPeriod)
 		defer cancel()
 
-		shutdownErrorChan <- srv.Shutdown(ctx)
+		shutdownServerChan <- srv.Shutdown(ctx)
 	}()
 
-	logger.Info("starting server", slog.Group("server", "addr", srv.Addr))
+	// Set up OpenTelemetry.
+	otelCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
 
-	err := srv.ListenAndServe()
-	if !errors.Is(err, http.ErrServerClosed) {
-		return err
-	}
-
-	err = <-shutdownErrorChan
+	otelShutdown, err := telemetry.Setup(otelCtx, serviceName)
 	if err != nil {
 		return err
 	}
 
-	logger.Info("stopped server", slog.Group("server", "addr", srv.Addr))
+	defer func() {
+		err = errors.Join(err, otelShutdown(context.Background()))
+	}()
+
+	l.With("server.addr", srv.Addr).Info("starting server")
+
+	err = srv.ListenAndServe()
+	if !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+
+	err = <-shutdownServerChan
+	if err != nil {
+		return err
+	}
+
+	l.With("server.addr", srv.Addr).Info("stopped server")
 
 	app.wg.Wait()
 	return nil

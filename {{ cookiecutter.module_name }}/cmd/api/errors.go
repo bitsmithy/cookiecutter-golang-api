@@ -2,39 +2,52 @@ package main
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 	"runtime/debug"
 	"strings"
 
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+
 	"{{ cookiecutter.module_path }}/internal/log"
 	"{{ cookiecutter.module_path }}/internal/response"
+	"{{ cookiecutter.module_path }}/internal/telemetry"
 	"{{ cookiecutter.module_path }}/internal/validator"
 )
 
 func (app *application) reportServerError(r *http.Request, err error) {
-	var (
-		message = err.Error()
-		method  = r.Method
-		url     = r.URL.String()
-		trace   = string(debug.Stack())
-	)
+	span := telemetry.CurrentSpan(r.Context())
 
-	requestAttrs := slog.Group("request", "method", method, "url", url)
-	log.Error(r.Context(), message, requestAttrs, "trace", trace)
+	log.
+		WithSpanAttrs(span,
+			attribute.String("request.method", r.Method),
+			attribute.String("request.url", r.URL.String()),
+			attribute.String("trace", string(debug.Stack())),
+		).
+		Error(err.Error())
 }
 
 func (app *application) errorMessage(w http.ResponseWriter, r *http.Request, status int, message string, headers http.Header) {
 	message = strings.ToUpper(message[:1]) + message[1:]
 
+	span := telemetry.CurrentSpan(r.Context())
+	span.SetAttributes(
+		attribute.Int("response.status", status),
+		attribute.String("response.message", message),
+	)
+	span.SetStatus(codes.Error, message)
+
 	err := response.JSONWithHeaders(w, status, map[string]string{"Error": message}, headers)
 	if err != nil {
+		span.RecordError(err)
 		app.reportServerError(r, err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
 func (app *application) serverError(w http.ResponseWriter, r *http.Request, err error) {
+	span := telemetry.CurrentSpan(r.Context())
+	span.RecordError(err)
 	app.reportServerError(r, err)
 
 	message := "The server encountered a problem and could not process your request"
