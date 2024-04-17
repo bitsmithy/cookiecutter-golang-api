@@ -11,7 +11,7 @@ import (
 )
 
 func (app *application) status(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	_, span := telemetry.Trace(r.Context(), "handler.status")
+	_, span := telemetry.Tracer().Start(r.Context(), "handler.status")
 	defer span.End()
 
 	statusKey := "status"

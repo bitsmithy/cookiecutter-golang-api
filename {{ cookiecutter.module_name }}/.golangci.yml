@@ -22,6 +22,7 @@ linters:
     - nolintlint
     - prealloc
     - rowserrcheck
+    - spancheck
     - sqlclosecheck
     - tenv
     - testableexamples
@@ -50,3 +51,10 @@ linters-settings:
     # If `true`, make the section order the same as the order of `sections`.
     # Default: false
     custom-order: true
+  spancheck:
+    checks:
+      - end
+      - record-error
+      - set-status
+    ignore-check-signatures:
+      - "telemetry.RecordError"

@@ -36,8 +36,8 @@ func setupTracer(ctx context.Context, r *resource.Resource) (*trace.TracerProvid
 	return traceProvider, nil
 }
 
-func Trace(ctx context.Context, name string) (context.Context, tracing.Span) {
-	return otel.Tracer("").Start(ctx, name)
+func Tracer() tracing.Tracer {
+	return otel.Tracer("")
 }
 
 func CurrentSpan(ctx context.Context) tracing.Span {
